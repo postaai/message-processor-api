@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { UserRepository } from '../repository/user.repository';
+import { InjectModel } from '@nestjs/mongoose';
+import { User } from '../models/user.model';
+import { Model } from 'mongoose';
 
 interface UserDataType {
   userId: string;
@@ -10,13 +12,14 @@ interface UserDataType {
 
 @Injectable()
 export class UserService {
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
   async create(user: UserDataType) {
-    return await this.userRepository.createUser(user);
+    const newUser = new this.userModel(user);
+    return await newUser.save();
   }
 
   async findByUserId(userId: string) {
-    return await this.userRepository.findUser(userId);
+    return await this.userModel.findOne({ userId }).exec()
   }
 }

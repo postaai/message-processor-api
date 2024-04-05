@@ -3,29 +3,31 @@ import OpenAI from 'openai';
 import { TextContentBlock } from 'openai/resources/beta/threads/messages/messages';
 import { delay } from 'src/utils/delay';
 import { OpenAiClient } from 'src/config/openaiclient/openai-client';
-import { UserRepository } from 'src/infra/database/repository/user.repository';
+import { UserService } from 'src/infra/database/services/user.service';
+
+const assistantID = 'asst_sVmJSAWXTV7Cdkn495cQaMO7';
 
 @Injectable()
 export class MessageProcessorUseCase {
   private clinet: OpenAI;
   constructor(
     private openAiClient: OpenAiClient,
-    private userRepository: UserRepository,
+    private userService: UserService,
   ) {
     this.clinet = this.openAiClient.getClient();
   }
+  
 
   async processMessage(userId: string, message: string) {
-    const assistantID = 'asst_sVmJSAWXTV7Cdkn495cQaMO7';
 
-    // let user = await this.userRepository.findUser(userId);
-    // if (!user) {
-    //   const newThread = await this.clinet.beta.threads.create();
-    //   user = await this.userRepository.createUser({
-    //     userId: userId,
-    //     threadId: newThread.id,
-    //   });
-    // }
+    let user = await this.userService.findByUserId(userId);
+    if (!user) {
+      const newThread = await this.clinet.beta.threads.create();
+      user = await this.userService.create({
+        userId,
+        threadId: newThread.id,
+      });
+    }
     await this.clinet.beta.threads.messages.create('threadId', {
       content: message,
       role: 'user',
