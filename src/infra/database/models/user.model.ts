@@ -3,16 +3,16 @@ import { HydratedDocument } from 'mongoose';
 
 export type UserDocument = HydratedDocument<User>;
 
-@Schema()
+@Schema( { collection: 'userEntity' })
 export class User {
   @Prop()
-  private userId: string;
+  userId: string;
   @Prop()
-  private name?: string;
+  name?: string;
   @Prop()
-  private status?: string;
+  status?: string;
   @Prop()
-  private threadId: string;
+  threadId: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

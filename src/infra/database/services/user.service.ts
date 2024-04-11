@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User } from '../models/user.model';
 import { Model } from 'mongoose';
 
-interface UserDataType {
+export interface UserDataType {
   userId: string;
   name?: string;
   status?: string;
@@ -19,7 +19,7 @@ export class UserService {
     return await newUser.save();
   }
 
-  async findByUserId(userId: string) {
+  async findByUserId(userId: string){
     return await this.userModel.findOne({ userId }).exec()
   }
 }

@@ -5,6 +5,9 @@ import { MessageProcessorUseCase } from "src/use-case/message-processor/message-
 export class RequestProcessBody {
   @ApiProperty()
   message: string;
+
+  @ApiProperty()
+  userId: string;
 }
 
 @Controller("message")
@@ -13,8 +16,11 @@ export class MessageController {
 
   @ApiBody({ type: RequestProcessBody })
   @Post("/process")
-  async processMessage(@Body("message") message: string) {
-    return await this.messageUseCase.processMessage("123", message);
+  async processMessage(@Body() body: RequestProcessBody) {
+    console.log(body);
+    const response = await this.messageUseCase.process(body.userId, body.message);
+    console.log(response);
+    return response;
   }
   
 }
