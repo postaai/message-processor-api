@@ -9,7 +9,7 @@ import { Run } from "openai/resources/beta/threads/runs/runs";
 import e from "express";
 import { ImoveisService } from "src/infra/database/services/imoveis.service";
 
-const assistantID = "asst_sVmJSAWXTV7Cdkn495cQaMO7";
+const assistantID = "asst_tePfOqvESxoNrsvxOYZ9m93t";
 
 @Injectable()
 export class MessageProcessorUseCase {
@@ -79,7 +79,7 @@ export class MessageProcessorUseCase {
     console.log("Status: ", retrieveRun.status);
 
     if (retrieveRun.status === "requires_action") {
-      return this.processToolCall(retrieveRun);
+      return await this.processToolCall(retrieveRun, user);
     } else if (retrieveRun.status === "completed") {
       await this.updateStatus(user.userId, "completed");
       return "completed";
@@ -131,21 +131,46 @@ export class MessageProcessorUseCase {
     }
   }
 
-  private async processToolCall(run: Run) {
+  private async processToolCall(run: Run, user: User) {
     const threadId = run.thread_id;
     const runId = run.id;
     const toolcalls = run.required_action?.submit_tool_outputs.tool_calls;
-    const imoveis = await this.imovelService.findAll();
 
     if (!toolcalls) {
-      console.log("processing tool calls...", toolcalls);
-
-      let toolOutputs: any = [];
-
-      for (const toolCall of toolcalls) {
-        const functionName = toolCall.function.name;
-        const arrgs = toolCall.function?.arguments;
-      }
+      return;
     }
+
+    console.log("processing tool calls...", toolcalls);
+
+    let toolOutputs: any = [];
+
+    const functions: {
+      [key: string]: (args: any) => Promise<any>;
+    } = {
+      getImoveis: async (args: any) => await this.imovelService.findAll(),
+  
+    };
+
+    for (const toolCall of toolcalls) {
+      const functionName = toolCall.function.name;
+      const args = toolCall.function?.arguments;
+
+      const output = await functions[functionName](args);
+
+      toolOutputs.push({
+        tool_call_id: toolCall.id,
+        output: JSON.stringify(output),
+      });
+    }
+
+    console.log("toolOutputs: ", toolOutputs);
+
+  const runSubmit =  await this.clinet.beta.threads.runs.submitToolOutputs(threadId, runId, {
+      tool_outputs: toolOutputs,
+    });
+
+    console.log("runSubmit: ", runSubmit);
+
+   await this.checkStatus(run, user);
   }
 }

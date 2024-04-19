@@ -6,6 +6,7 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { UserService } from "./infra/database/services/user.service";
 import { User, UserSchema } from "./infra/database/models/user.model";
 import { Imovel, ImovelSchema } from "./infra/database/models/imoveis.model";
+import { ImoveisService } from "./infra/database/services/imoveis.service";
 
 @Module({
   imports: [
@@ -14,6 +15,6 @@ import { Imovel, ImovelSchema } from "./infra/database/models/imoveis.model";
     OpenAiModule.forRoot(),
   ],
   controllers: [MessageController],
-  providers: [MessageProcessorUseCase,UserService],
+  providers: [MessageProcessorUseCase,UserService,ImoveisService],
 })
 export class AppModule {}
