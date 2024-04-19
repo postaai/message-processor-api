@@ -7,6 +7,7 @@ import { UserService } from "src/infra/database/services/user.service";
 import { User } from "src/infra/database/models/user.model";
 import { Run } from "openai/resources/beta/threads/runs/runs";
 import e from "express";
+import { ImoveisService } from "src/infra/database/services/imoveis.service";
 
 const assistantID = "asst_sVmJSAWXTV7Cdkn495cQaMO7";
 
@@ -15,7 +16,8 @@ export class MessageProcessorUseCase {
   private clinet: OpenAI;
   constructor(
     private openAiClient: OpenAiClient,
-    private userService: UserService
+    private userService: UserService,
+    private imovelService: ImoveisService
   ) {
     this.clinet = this.openAiClient.getClient();
   }
@@ -129,5 +131,21 @@ export class MessageProcessorUseCase {
     }
   }
 
-  private async processToolCall(run: Run) {}
+  private async processToolCall(run: Run) {
+    const threadId = run.thread_id;
+    const runId = run.id;
+    const toolcalls = run.required_action?.submit_tool_outputs.tool_calls;
+    const imoveis = await this.imovelService.findAll();
+
+    if (!toolcalls) {
+      console.log("processing tool calls...", toolcalls);
+
+      let toolOutputs: any = [];
+
+      for (const toolCall of toolcalls) {
+        const functionName = toolCall.function.name;
+        const arrgs = toolCall.function?.arguments;
+      }
+    }
+  }
 }

@@ -5,11 +5,12 @@ import { MessageProcessorUseCase } from "./use-case/message-processor/message-pr
 import { MongooseModule } from "@nestjs/mongoose";
 import { UserService } from "./infra/database/services/user.service";
 import { User, UserSchema } from "./infra/database/models/user.model";
+import { Imovel, ImovelSchema } from "./infra/database/models/imoveis.model";
 
 @Module({
   imports: [
     MongooseModule.forRoot(process.env.MONGO_URI),
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }, {name: Imovel.name, schema: ImovelSchema}]),
     OpenAiModule.forRoot(),
   ],
   controllers: [MessageController],
