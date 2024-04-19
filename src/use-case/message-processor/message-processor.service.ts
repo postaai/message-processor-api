@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { HttpException, Injectable } from "@nestjs/common";
 import OpenAI from "openai";
 import { TextContentBlock } from "openai/resources/beta/threads/messages/messages";
 import { delay } from "src/utils/delay";
@@ -43,29 +43,13 @@ export class MessageProcessorUseCase {
 
       console.log("Thread ID: ", user.threadId);
     } catch (err) {
-      throw new Error("Error to send message to OpenAI");
+      throw new HttpException("Error to send message to OpenAI", 400);
     }
 
-    let run: Run;
-
-    try {
-      console.log("Criando run");
-      run = await this.clinet.beta.threads.runs.create(
-        user.threadId,
-        {
-          assistant_id: assistantID,
-        },
-        { timeout: 2000 }
-      );
-    } catch (err) {
-      const errorMessage = err.message as string;
-      if (errorMessage.toLowerCase().includes("timeout")) {
-        console.log("erro timeout:", err);
-        throw new Error("Error timeout");
-      }
-
-      throw new Error("Error to create run");
-    }
+    console.log("Criando run");
+    const run = await this.clinet.beta.threads.runs.create(user.threadId, {
+      assistant_id: assistantID,
+    });
 
     if ((await this.checkStatus(run, user)) === "completed") {
       const listMessage = await this.listMessages(user.threadId, 0);
@@ -75,39 +59,46 @@ export class MessageProcessorUseCase {
   }
 
   private async checkStatus(run: Run, user: User) {
+    let retrieveRun: Run;
+
     try {
       await delay(1000);
-      
+
       console.log("Verificando status");
-      const retrieveRun = await this.clinet.beta.threads.runs.retrieve(
+      retrieveRun = await this.clinet.beta.threads.runs.retrieve(
         user.threadId,
         run.id
       );
-      
-      console.log("Status: ", retrieveRun.status);
-
-      if(retrieveRun.last_error){
-
-      console.log("error last message: ", retrieveRun.last_error.message);        
-      console.log("error last code: ", retrieveRun.last_error.code);
-      }
-      
-
-      if (retrieveRun.status === "requires_action") {
-        return this.processToolCall(retrieveRun);
-      } else if (retrieveRun.status === "completed") {
-        await this.updateStatus(user.userId, "completed");
-        return "completed";
-      } else if (retrieveRun.status === "in_progress") {
-        await this.updateStatus(user.userId, "in_progress");
-        return this.checkStatus(retrieveRun, user);
-      }
-
-      return this.checkStatus(retrieveRun, user);
     } catch (err) {
       console.log("erro check status:", err);
-      return new Error("Error to check status");
+      return new HttpException("Error to check status", 400);
     }
+
+    console.log("Status: ", retrieveRun.status);
+
+    if (retrieveRun.status === "requires_action") {
+      return this.processToolCall(retrieveRun);
+    } else if (retrieveRun.status === "completed") {
+      await this.updateStatus(user.userId, "completed");
+      return "completed";
+    } else if (retrieveRun.status === "in_progress") {
+      await this.updateStatus(user.userId, "in_progress");
+      return this.checkStatus(retrieveRun, user);
+    } else if (retrieveRun.status === "failed") {
+      if (
+        retrieveRun.last_error &&
+        retrieveRun.last_error.code.includes("rate_limit_exceeded")
+      ) {
+        console.log(
+          "Deu Erro error last message: ",
+          retrieveRun.last_error.message
+        );
+        console.log("error last code: ", retrieveRun.last_error.code);
+        throw new HttpException(retrieveRun.last_error.message, 400);
+      }
+    }
+
+    return this.checkStatus(retrieveRun, user);
   }
 
   private async updateStatus(userID: string, status: string) {
@@ -118,7 +109,7 @@ export class MessageProcessorUseCase {
 
   private async listMessages(threadId: string, limit: number) {
     if (limit > 5) {
-      throw new Error("Limit is greater than 5");
+      throw new HttpException("Limit is greater than 5", 400);
     }
 
     try {
@@ -134,7 +125,7 @@ export class MessageProcessorUseCase {
       return message.text.value;
     } catch (err) {
       console.log("erro list messages:", err);
-      throw new Error("Error to list messages");
+      throw new HttpException("Error to list messages", 400);
     }
   }
 
