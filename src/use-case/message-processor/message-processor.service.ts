@@ -53,9 +53,10 @@ export class MessageProcessorUseCase {
       assistant_id: assistantID,
     });
 
-    if ((await this.checkStatus(run, user)) === "completed") {
+    const resultRunStatus = await this.checkStatus(run, user);
+
+    if (resultRunStatus === "completed") {
       const listMessage = await this.listMessages(user.threadId, 0);
-      console.log("Mensagens listadas: ", listMessage);
       return listMessage;
     }
   }
@@ -79,7 +80,7 @@ export class MessageProcessorUseCase {
     console.log("Status: ", retrieveRun.status);
 
     if (retrieveRun.status === "requires_action") {
-      return await this.processToolCall(retrieveRun, user);
+      await this.processToolCall(retrieveRun, user);
     } else if (retrieveRun.status === "completed") {
       await this.updateStatus(user.userId, "completed");
       return "completed";
@@ -98,6 +99,8 @@ export class MessageProcessorUseCase {
         console.log("error last code: ", retrieveRun.last_error.code);
         throw new HttpException(retrieveRun.last_error.message, 400);
       }
+      await this.updateStatus(user.userId, "failed");
+      throw new HttpException("Error to process message", 400);
     }
 
     return this.checkStatus(retrieveRun, user);
@@ -145,10 +148,29 @@ export class MessageProcessorUseCase {
     let toolOutputs: any = [];
 
     const functions: {
-      [key: string]: (args: any) => Promise<any>;
+      [key: string]: (args?: any) => Promise<any>;
     } = {
       getImoveis: async (args: any) => await this.imovelService.findAll(),
-  
+      finishConversation: async (args: any) => {
+        await this.clinet.beta.threads.messages.create(user.threadId, {
+          content:
+            "Crie um resumo dessa conversa, listando os pontos de interesse do usuário",
+          role: "user",
+        });
+
+        const run = await this.clinet.beta.threads.runs.create(user.threadId, {
+          assistant_id: assistantID,
+        });
+
+        const status = await this.checkStatus(run, user);
+
+        if (status === "completed") {
+          const listMessage = await this.listMessages(user.threadId, 0);
+          // chamar api do wthastapp
+          console.log({ data: listMessage });
+          return { message: "Obrigado!" };
+        }
+      },
     };
 
     for (const toolCall of toolcalls) {
@@ -165,12 +187,16 @@ export class MessageProcessorUseCase {
 
     console.log("toolOutputs: ", toolOutputs);
 
-  const runSubmit =  await this.clinet.beta.threads.runs.submitToolOutputs(threadId, runId, {
-      tool_outputs: toolOutputs,
-    });
+    const runSubmit = await this.clinet.beta.threads.runs.submitToolOutputs(
+      threadId,
+      runId,
+      {
+        tool_outputs: toolOutputs,
+      }
+    );
 
     console.log("runSubmit: ", runSubmit);
 
-   await this.checkStatus(run, user);
+    await this.checkStatus(run, user);
   }
 }

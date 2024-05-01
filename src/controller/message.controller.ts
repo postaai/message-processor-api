@@ -17,9 +17,9 @@ export class MessageController {
   @ApiBody({ type: RequestProcessBody })
   @Post("/process")
   async processMessage(@Body() body: RequestProcessBody) {
-    console.log(body);
+    console.log("BODY ---->",body);
     const response = await this.messageUseCase.process(body.userId, body.message);
-    console.log(response);
+    console.log("RESPONSE -->",response);
     return response;
   }
   
