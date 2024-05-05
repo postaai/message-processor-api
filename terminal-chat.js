@@ -33,10 +33,13 @@ function terminalChat() {
 
   rl.question("Digite sua mensagem: ", async (message) => {
     rl.close();
+    console.log("\x1b[34mprocessando...\x1b[0m");
     const response = await requestToServer("relampago-02", message);
 
+    const responseObj = JSON.parse(response);
+
     console.log("\n\n")
-    console.log("\x1b[32mRESPOSTA GPT:", response, "\x1b[0m");
+    console.log("\x1b[32mRESPOSTA GPT:", responseObj.message, "\x1b[0m");
     console.log("\n\n")
 
     terminalChat();
