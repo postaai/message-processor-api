@@ -17,10 +17,12 @@ export class MessageController {
   @ApiBody({ type: RequestProcessBody })
   @Post("/process")
   async processMessage(@Body() body: RequestProcessBody) {
-    console.log("BODY ---->",body);
-    const response = await this.messageUseCase.process(body.userId, body.message);
-    console.log("RESPONSE -->",response);
-    return response;
+    console.log("BODY ---->", body);
+    const message = await this.messageUseCase.process(
+      body.userId,
+      body.message
+    );
+    console.log("RESPONSE -->", message);
+    return { message };
   }
-  
 }
