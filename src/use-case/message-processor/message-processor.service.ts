@@ -9,8 +9,12 @@ import { Run } from "openai/resources/beta/threads/runs/runs";
 import e from "express";
 import { ImoveisService } from "src/infra/database/services/imoveis.service";
 import { postSendResume } from "src/infra/whtasapp/whatsapp.service";
+import {
+  fetchJobs,
+  postSendCurriculo,
+} from "src/infra/bigfoods/bigfoods.service";
 
-const assistantID = "asst_tePfOqvESxoNrsvxOYZ9m93t";
+const assistantID = process.env.ASSISTANT_ID;
 
 @Injectable()
 export class MessageProcessorUseCase {
@@ -56,8 +60,12 @@ export class MessageProcessorUseCase {
 
     const resultRunStatus = await this.checkStatus(run, user);
 
-    if(resultRunStatus === "resume") {
-      return "Obrigado pelo contato, um consultor irá entrar em contato em breve!"
+    if (resultRunStatus === "resume") {
+      return "Obrigado pelo contato, um consultor irá entrar em contato em breve!";
+    }
+
+    if (resultRunStatus === "curriculo") {
+      return "Obrigado pelo contato, enviei suas informações para o recrutador, boa sorte!";
     }
 
     if (resultRunStatus === "completed") {
@@ -92,6 +100,11 @@ export class MessageProcessorUseCase {
       ) {
         this.finishConversation(retrieveRun, user);
         return "resume";
+      } else if (
+        toolCalls.find((data) => data.function.name === "sendCurriculo")
+      ) {
+        await this.sendCurriculo(toolCalls[0].function.arguments);
+        return "curriculo";
       }
       await this.processToolCall(retrieveRun, user);
     } else if (retrieveRun.status === "completed") {
@@ -147,6 +160,22 @@ export class MessageProcessorUseCase {
     }
   }
 
+  private async sendCurriculo(data: any) {
+    try {
+      await postSendCurriculo(data);
+    } catch (error) {
+      console.log("de enviar para o site erro ignorado", error);
+    }
+
+    try {
+     
+      await postSendResume(data)
+      console.log("enviando curriculo", data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   private async finishConversation(run: Run, user: User) {
     const threadId = run.thread_id;
     const runId = run.id;
@@ -186,7 +215,7 @@ export class MessageProcessorUseCase {
       if (status === "completed") {
         const listMessage = await this.listMessages(user.threadId, 0);
         // chamar api do wthastapp
-        await postSendResume(listMessage)
+        await postSendResume(listMessage);
         console.log({ data: listMessage });
         return { message: "Obrigado!" };
       }
@@ -196,7 +225,6 @@ export class MessageProcessorUseCase {
   private async processToolCall(run: Run, user: User) {
     const threadId = run.thread_id;
     const runId = run.id;
-    const runObject = run;
     const toolcalls = run.required_action?.submit_tool_outputs.tool_calls;
 
     if (!toolcalls) {
@@ -211,6 +239,10 @@ export class MessageProcessorUseCase {
       [key: string]: (args?: any) => Promise<any>;
     } = {
       getImoveis: async (args: any) => await this.imovelService.findAll(),
+      getJobs: async () => {
+        await delay(1000);
+        return await fetchJobs();
+      },
     };
 
     for (const toolCall of toolcalls) {

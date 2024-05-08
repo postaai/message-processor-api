@@ -2,7 +2,7 @@ const readline = require("readline");
 
 const APP_PORT = process.env.APP_PORT || 3000;
 
-const userId = "relampago-marquinhos-02"
+const userId = "relampago-marquinhos-06"
 
 const requestToServer = async (userId, message) => {
   const myHeaders = new Headers();
