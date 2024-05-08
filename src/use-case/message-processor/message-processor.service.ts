@@ -152,6 +152,23 @@ export class MessageProcessorUseCase {
     } = {
       getImoveis: async (args: any) => await this.imovelService.findAll(),
       finishConversation: async (args: any) => {
+
+        toolOutputs.push({
+          tool_call_id: toolcalls[0].id,
+          output: JSON.stringify("finalizar a conversa"),
+        });
+        
+        console.log("tool call id:", toolcalls[0].id)
+        console.log("threadId", threadId)
+        console.log("runId", runId)
+        await this.clinet.beta.threads.runs.submitToolOutputs(
+          threadId,
+          runId,
+          {
+            tool_outputs: toolOutputs,
+          }
+        );
+        
         await this.clinet.beta.threads.messages.create(user.threadId, {
           content:
             "Crie um resumo dessa conversa, listando os pontos de interesse do usuário",
