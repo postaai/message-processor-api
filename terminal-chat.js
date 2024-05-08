@@ -2,6 +2,8 @@ const readline = require("readline");
 
 const APP_PORT = process.env.APP_PORT || 3000;
 
+const userId = "relampago-marquinhos-02"
+
 const requestToServer = async (userId, message) => {
   const myHeaders = new Headers();
   myHeaders.append("Content-Type", "application/json");
@@ -34,7 +36,7 @@ function terminalChat() {
   rl.question("Digite sua mensagem: ", async (message) => {
     rl.close();
     console.log("\x1b[34mprocessando...\x1b[0m");
-    const response = await requestToServer("relampago-02", message);
+    const response = await requestToServer(userId, message);
 
     const responseObj = JSON.parse(response);
 
