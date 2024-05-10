@@ -70,6 +70,10 @@ export class MessageProcessorUseCase {
       return "Obrigado pelo contato, enviei suas informações para o recrutador, boa sorte!";
     }
 
+    if (resultRunStatus === "rate_limit_exceeded") {
+      return "Desculpe, estamos com um alto volume de mensagens, por favor tente novamente mais tarde!";
+    }
+
     if (resultRunStatus === "completed") {
       const listMessage = await this.listMessages(user.threadId, 0);
       return listMessage;
@@ -125,7 +129,7 @@ export class MessageProcessorUseCase {
           retrieveRun.last_error.message
         );
         console.log("error last code: ", retrieveRun.last_error.code);
-        throw new HttpException(retrieveRun.last_error.message, 400);
+        return "rate_limit_exceeded";
       }
       await this.updateStatus(user.userId, "failed");
       throw new HttpException("Error to process message", 400);
@@ -201,7 +205,7 @@ export class MessageProcessorUseCase {
     if (submitStatus === "completed") {
       await this.clinet.beta.threads.messages.create(user.threadId, {
         content:
-          "Crie um resumo dessa conversa, listando os pontos de interesse do usuário",
+          "crie um resumo da conversa para um vendedor faça de uma forma como teplate não precisa responder com claro ou esta qui o resumo, como um inicio da mensagem como novo cliente encontrato segue informações, contentos os pontos principais da conversa como nome do cliente, link do imovel, entrada e dentre",
         role: "user",
       });
 
@@ -217,9 +221,8 @@ export class MessageProcessorUseCase {
 
       if (status === "completed") {
         const listMessage = await this.listMessages(user.threadId, 0);
-        // chamar api do wthastapp
-        await postSendResume(listMessage);
         console.log({ data: listMessage });
+        await postSendResume(listMessage);
         return { message: "Obrigado!" };
       }
     }
