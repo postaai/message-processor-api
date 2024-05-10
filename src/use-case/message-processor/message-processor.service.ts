@@ -43,10 +43,7 @@ export class MessageProcessorUseCase {
     try {
       console.log("Mensagem enviada para OpenAI");
       await this.clinet.beta.threads.messages.create(user.threadId, {
-        content: [
-          { type: "text", text: "Após coletar o nome do usuário, sempre se refira a ele pelo nome" },
-          { type: "text", text: message },
-        ],
+        content: message,
         role: "user",
         metadata: {},
       });
