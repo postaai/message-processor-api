@@ -26,7 +26,7 @@ export class MessageProcessorUseCase {
     this.clinet = this.openAiClient.getClient();
   }
 
-  async process(userId: string, message: string) {
+  async process(userId: string, message: string, assistantId: string) {
     let user = await this.userService.findByUserId(userId);
     if (!user) {
       const newThread = await this.clinet.beta.threads.create();

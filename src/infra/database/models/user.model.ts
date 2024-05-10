@@ -13,6 +13,8 @@ export class User {
   status?: string;
   @Prop()
   threadId: string;
+  @Prop()
+  assistantId: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
