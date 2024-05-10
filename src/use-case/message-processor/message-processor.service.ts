@@ -1,6 +1,5 @@
 import { HttpException, Injectable } from "@nestjs/common";
 import OpenAI from "openai";
-import { TextContentBlock } from "openai/resources/beta/threads/messages/messages";
 import { delay } from "src/utils/delay";
 import { OpenAiClient } from "src/config/openaiclient/openai-client";
 import { UserService } from "src/infra/database/services/user.service";
@@ -12,9 +11,9 @@ import {
   fetchJobs,
   postSendCurriculo,
 } from "src/infra/bigfoods/bigfoods.service";
+import { TextContentBlock } from "openai/resources/beta/threads/messages";
 
 const assistantID = process.env.ASSISTANT_ID;
-
 
 @Injectable()
 export class MessageProcessorUseCase {
@@ -44,8 +43,12 @@ export class MessageProcessorUseCase {
     try {
       console.log("Mensagem enviada para OpenAI");
       await this.clinet.beta.threads.messages.create(user.threadId, {
-        content: message,
+        content: [
+          { type: "text", text: "Após coletar o nome do usuário, sempre se refira a ele pelo nome" },
+          { type: "text", text: message },
+        ],
         role: "user",
+        metadata: {},
       });
 
       console.log("Thread ID: ", user.threadId);
@@ -54,7 +57,6 @@ export class MessageProcessorUseCase {
     }
 
     console.log("Criando run");
-    console.log("ASSISTANT_ID ------------------------>",assistantID)
 
     const run = await this.clinet.beta.threads.runs.create(user.threadId, {
       assistant_id: assistantID,
@@ -174,8 +176,7 @@ export class MessageProcessorUseCase {
     }
 
     try {
-     
-      await postSendResume(data)
+      await postSendResume(data);
       console.log("enviando curriculo", data);
     } catch (error) {
       console.log(error);
@@ -208,7 +209,6 @@ export class MessageProcessorUseCase {
           "crie um resumo da conversa para um vendedor faça de uma forma como teplate não precisa responder com claro ou esta qui o resumo, como um inicio da mensagem como novo cliente encontrato segue informações, contentos os pontos principais da conversa como nome do cliente, link do imovel, entrada e dentre",
         role: "user",
       });
-
 
       const runRsponse = await this.clinet.beta.threads.runs.create(
         user.threadId,
