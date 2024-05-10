@@ -2,7 +2,9 @@ const readline = require("readline");
 
 const APP_PORT = process.env.APP_PORT || 3000;
 
-const userId = "relampago-marquinhos-06"
+const userId = process.argv[2] || "user-default";
+
+console.log("\x1b[32mChat com user id ---->", userId, "\x1b[0m");
 
 const requestToServer = async (userId, message) => {
   const myHeaders = new Headers();
@@ -40,9 +42,8 @@ function terminalChat() {
 
     const responseObj = JSON.parse(response);
 
-    console.log("\n\n")
+    console.log("\n")
     console.log("\x1b[32mRESPOSTA GPT:", responseObj.message, "\x1b[0m");
-    console.log("\n\n")
 
     terminalChat();
   });

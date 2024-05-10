@@ -6,7 +6,6 @@ import { OpenAiClient } from "src/config/openaiclient/openai-client";
 import { UserService } from "src/infra/database/services/user.service";
 import { User } from "src/infra/database/models/user.model";
 import { Run } from "openai/resources/beta/threads/runs/runs";
-import e from "express";
 import { ImoveisService } from "src/infra/database/services/imoveis.service";
 import { postSendResume } from "src/infra/whtasapp/whatsapp.service";
 import {
@@ -15,6 +14,7 @@ import {
 } from "src/infra/bigfoods/bigfoods.service";
 
 const assistantID = process.env.ASSISTANT_ID;
+
 
 @Injectable()
 export class MessageProcessorUseCase {
@@ -54,6 +54,8 @@ export class MessageProcessorUseCase {
     }
 
     console.log("Criando run");
+    console.log("ASSISTANT_ID ------------------------>",assistantID)
+
     const run = await this.clinet.beta.threads.runs.create(user.threadId, {
       assistant_id: assistantID,
     });
@@ -202,6 +204,7 @@ export class MessageProcessorUseCase {
           "Crie um resumo dessa conversa, listando os pontos de interesse do usuário",
         role: "user",
       });
+
 
       const runRsponse = await this.clinet.beta.threads.runs.create(
         user.threadId,
