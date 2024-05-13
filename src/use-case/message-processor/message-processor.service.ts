@@ -122,6 +122,7 @@ export class MessageProcessorUseCase {
       ) {
         await this.finishConversation(retrieveRun, user);
         await this.userService.deleteUserById(user.userId);
+        await this.clearSession(user.userId);
         return "resume";
       } else if (
         toolCalls.find((data) => data.function.name === "sendCurriculo")
