@@ -1,5 +1,5 @@
-import { Body, Controller, Post, Res } from "@nestjs/common";
-import { ApiBody, ApiProperty } from "@nestjs/swagger";
+import { Body, Controller, Delete, Param, Post, Res } from "@nestjs/common";
+import { ApiBody, ApiProperty, ApiTags } from "@nestjs/swagger";
 import { Response } from "express";
 import { MessageProcessorUseCase } from "src/use-case/message-processor/message-processor.service";
 import zod from "zod";
@@ -12,6 +12,7 @@ export class RequestProcessBody {
   userId: string;
 }
 
+@ApiTags("Message")
 @Controller("message")
 export class MessageController {
   constructor(private messageUseCase: MessageProcessorUseCase) {}
@@ -26,33 +27,30 @@ export class MessageController {
     const schema = zod.object({
       message: zod.string(),
       userId: zod.string(),
-      assistantId: zod.string(),
     });
 
     const validationResult = schema.safeParse(body);
 
     if (!validationResult.success) {
-      // Handle validation errors
-
       const errors = validationResult.error.errors;
 
-      const renderError = errors.map((error) => {
-        return `field: ${error.path.join(", ")}: ${error.message}`;
-      }).join("\n")
+      const renderErrors = errors.map((error) => {
+        return { field: error.path.join(", "), message: error.message };
+      });
 
-      console.log(renderError);
+      console.log(renderErrors);
 
       return res.status(400).json({
-        message: `body validation error: ${renderError}`,
+        message: `body validation error`,
+        errors: renderErrors,
       });
     }
 
     const message = await this.messageUseCase.process(
       validationResult.data.userId,
       validationResult.data.message,
-      validationResult.data.assistantId
     );
     console.log("RESPONSE -->", message);
-    return { message };
+    return res.send({ message });
   }
 }

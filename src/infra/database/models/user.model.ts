@@ -15,6 +15,8 @@ export class User {
   threadId: string;
   @Prop()
   assistantId: string;
+  @Prop()
+  cratedAt: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -13,7 +13,7 @@ import {
 } from "src/infra/bigfoods/bigfoods.service";
 import { TextContentBlock } from "openai/resources/beta/threads/messages";
 
-const assistantID = process.env.ASSISTANT_ID;
+//const assistantID = process.env.ASSISTANT_ID;
 
 @Injectable()
 export class MessageProcessorUseCase {
@@ -26,17 +26,26 @@ export class MessageProcessorUseCase {
     this.clinet = this.openAiClient.getClient();
   }
 
-  async process(userId: string, message: string, assistantId: string) {
+  async process(userId: string, message: string) {
     let user = await this.userService.findByUserId(userId);
     if (!user) {
-      const newThread = await this.clinet.beta.threads.create();
-      user = await this.userService.create({
-        userId,
-        threadId: newThread.id,
-      });
+      const assistantId = process.env.DEFAULT_ASSISTANT_ID;
+      user = await this.createUser(userId, assistantId);
+      console.log("Novo usuario criado!");
     }
-    console.log("usuario criado :", user);
+    console.log("usuario: ---->", user);
     return await this.processMessage(user, message);
+  }
+
+  async createUser(userId: string, assistantId: string) {
+    const newThread = await this.clinet.beta.threads.create();
+
+    return await this.userService.create({
+      userId,
+      threadId: newThread.id,
+      assistantId: assistantId,
+      createdAt: new Date(),
+    });
   }
 
   private async processMessage(user: User, message: string) {
@@ -49,14 +58,22 @@ export class MessageProcessorUseCase {
       });
 
       console.log("Thread ID: ", user.threadId);
-    } catch (err) {
+    } catch (err: any) {
+      const errorMessage = err?.message as string;
+      if (
+        errorMessage.includes("Can't add messages to thread") &&
+        errorMessage.includes("already has an active run")
+      ) {
+        throw new HttpException("thread_is_active", 400);
+      }
+
       throw new HttpException("Error to send message to OpenAI", 400);
     }
 
     console.log("Criando run");
 
     const run = await this.clinet.beta.threads.runs.create(user.threadId, {
-      assistant_id: assistantID,
+      assistant_id: user.assistantId,
     });
 
     const resultRunStatus = await this.checkStatus(run, user);
@@ -211,7 +228,7 @@ export class MessageProcessorUseCase {
       const runRsponse = await this.clinet.beta.threads.runs.create(
         user.threadId,
         {
-          assistant_id: assistantID,
+          assistant_id: user.assistantId,
         }
       );
 
@@ -274,5 +291,18 @@ export class MessageProcessorUseCase {
     console.log("runSubmit: ", runSubmit);
 
     await this.checkStatus(run, user);
+  }
+
+  async clearSession(userId: string) {
+    const user = await this.userService.findByUserId(userId);
+    if (!user) return false;
+
+    this.clinet.beta.threads.del(user.threadId);
+
+    return await this.userService.deleteUserById(userId);
+  }
+
+  async getSession(userId: string) {
+    return await this.userService.findByUserId(userId);
   }
 }
