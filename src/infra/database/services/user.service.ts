@@ -8,6 +8,8 @@ export interface UserDataType {
   name?: string;
   status?: string;
   threadId: string;
+  assistantId?: string;
+  createdAt?: Date;
 }
 
 @Injectable()

@@ -13,6 +13,7 @@ const requestToServer = async (userId, message) => {
   const raw = JSON.stringify({
     message,
     userId,
+    assistantId:"asst_tePfOqvESxoNrsvxOYZ9m93t"
   });
 
   const requestOptions = {
@@ -24,7 +25,7 @@ const requestToServer = async (userId, message) => {
 
   const data = await fetch(`http://localhost:${APP_PORT}/message/process`, requestOptions)
     .then((response) => response.text())
-    .then((result) =>result)
+    .then((result) =>result).catch((error) => console.log("error", error));
 
   return data;
 };
