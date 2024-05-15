@@ -34,7 +34,7 @@ export class MessageProcessorUseCase {
       console.log("Novo usuario criado!");
     }
     console.log("usuario: ---->", user);
-    if (user.status != "completed") {
+    if (user.status === "completed") {
       return await this.processMessage(user, message);
     }
     return "Estou processando sua ultima mensagem, por favor envie somente uma mensagem por vez para melhor atendimento!";
