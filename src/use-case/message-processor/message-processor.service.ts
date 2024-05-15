@@ -33,7 +33,8 @@ export class MessageProcessorUseCase {
       user = await this.createUser(userId, assistantId);
       console.log("Novo usuario criado!");
     }
-    if (user.status === "in_progress") {
+    console.log("user : ", user);
+    if (user?.status === "in_progress") {
       return "Estou processando sua ultima mensagem, por favor envie somente uma mensagem por vez para melhor atendimento!";
     }
 
