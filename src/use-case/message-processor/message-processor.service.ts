@@ -34,7 +34,10 @@ export class MessageProcessorUseCase {
       console.log("Novo usuario criado!");
     }
     console.log("usuario: ---->", user);
-    return await this.processMessage(user, message);
+    if (user.status != "completed") {
+      return await this.processMessage(user, message);
+    }
+    return "Estou processando sua ultima mensagem, por favor envie somente uma mensagem por vez para melhor atendimento!";
   }
 
   async createUser(userId: string, assistantId: string) {
@@ -221,8 +224,15 @@ export class MessageProcessorUseCase {
 
     if (submitStatus === "completed") {
       await this.clinet.beta.threads.messages.create(user.threadId, {
-        content:
-          "crie um resumo da conversa para um vendedor faça de uma forma como teplate não precisa responder com claro ou esta qui o resumo, como um inicio da mensagem como novo cliente encontrato segue informações, contentos os pontos principais da conversa como nome do cliente, link do imovel, entrada e dentre",
+        content: `Crie um resumo da conversa contendo as seguintes informaçĩoes em formato json, caso não encontre a informação atribua null, o telefone sempre será ${user.userId}.
+                  nome:
+                  telefone:
+                  linkImovel:
+                  formaDePagamento:
+                  valorImovel:
+                  valorEntrada:
+                  formaDePagamento:
+                  Observacaoes:`,
         role: "user",
       });
 
