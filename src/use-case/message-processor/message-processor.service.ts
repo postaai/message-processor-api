@@ -33,10 +33,6 @@ export class MessageProcessorUseCase {
       user = await this.createUser(userId, assistantId);
       console.log("Novo usuario criado!");
     }
-    console.log("user : ", user);
-    if (user?.status === "in_progress") {
-      return "Estou processando sua ultima mensagem, por favor envie somente uma mensagem por vez para melhor atendimento!";
-    }
 
     return await this.processMessage(user, message);
   }
@@ -225,7 +221,7 @@ export class MessageProcessorUseCase {
 
     if (submitStatus === "completed") {
       await this.clinet.beta.threads.messages.create(user.threadId, {
-        content: `Crie um resumo da conversa contendo as seguintes informaçĩoes em formato json, caso não encontre a informação atribua null, o telefone sempre será ${user.userId}.
+        content: `Crie um resumo da conversa contendo as seguintes informaçĩoes em formato json, caso não encontre a informação atribua null, o telefone sempre será ${user.userId}, preencha o campo observacao com informacoes uteis da conversa.
                   nome:
                   telefone:
                   linkImovel:
