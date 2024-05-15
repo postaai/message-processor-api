@@ -33,11 +33,11 @@ export class MessageProcessorUseCase {
       user = await this.createUser(userId, assistantId);
       console.log("Novo usuario criado!");
     }
-    console.log("usuario: ---->", user);
-    if (user.status === "completed") {
-      return await this.processMessage(user, message);
+    if (user.status === "in_progress") {
+      return "Estou processando sua ultima mensagem, por favor envie somente uma mensagem por vez para melhor atendimento!";
     }
-    return "Estou processando sua ultima mensagem, por favor envie somente uma mensagem por vez para melhor atendimento!";
+
+    return await this.processMessage(user, message);
   }
 
   async createUser(userId: string, assistantId: string) {
