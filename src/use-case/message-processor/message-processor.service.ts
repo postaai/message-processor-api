@@ -112,6 +112,7 @@ export class MessageProcessorUseCase {
       return new HttpException("Error to check status", 400);
     }
 
+    console.log("runObj->: ", retrieveRun);
     console.log("Status: ", retrieveRun.status);
 
     if (retrieveRun.status === "requires_action") {
@@ -159,6 +160,7 @@ export class MessageProcessorUseCase {
   private async updateStatus(userID: string, status: string) {
     const user = await this.userService.findByUserId(userID);
     user.status = status;
+    user.updatedAt = new Date();
     await this.userService.create(user);
   }
 

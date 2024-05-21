@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Param, Post, Res } from "@nestjs/common";
+import { Body, Controller, Post, Res } from "@nestjs/common";
 import { ApiBody, ApiProperty, ApiTags } from "@nestjs/swagger";
 import { Response } from "express";
 import { MessageProcessorUseCase } from "src/use-case/message-processor/message-processor.service";
@@ -48,7 +48,7 @@ export class MessageController {
 
     const message = await this.messageUseCase.process(
       validationResult.data.userId,
-      validationResult.data.message,
+      validationResult.data.message
     );
     console.log("RESPONSE -->", message);
     return res.send({ message });
