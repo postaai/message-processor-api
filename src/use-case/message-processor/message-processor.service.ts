@@ -38,7 +38,11 @@ export class MessageProcessorUseCase {
   }
 
   async createUser(userId: string, assistantId: string) {
-    const newThread = await this.clinet.beta.threads.create();
+    const newThread = await this.clinet.beta.threads.create({
+      tool_resources: {
+        file_search: { vector_store_ids: [process.env.FILE_SEARCH_ID] },
+      },
+    });
 
     return await this.userService.create({
       userId,
@@ -225,12 +229,16 @@ export class MessageProcessorUseCase {
       await this.clinet.beta.threads.messages.create(user.threadId, {
         content: `Crie um resumo da conversa contendo as seguintes informaçĩoes em formato json, caso não encontre a informação atribua null, o telefone sempre será ${user.userId}, preencha o campo observacao com informacoes uteis da conversa.
                   nome:
+                  datadeNascimento:
+                  trabalhaDeCarteiraAssinada:
+                  rendaBrutaMensal:
+                  anosDeCarteiraAssinada:
+                  quantosFilhos: 	
                   telefone:
                   linkImovel:
                   formaDePagamento:
                   valorImovel:
                   valorEntrada:
-                  formaDePagamento:
                   Observacaoes:`,
         role: "user",
       });
@@ -269,7 +277,11 @@ export class MessageProcessorUseCase {
     const functions: {
       [key: string]: (args?: any) => Promise<any>;
     } = {
-      getImoveis: async (args: any) => await this.imovelService.findAll(),
+      getImoveis: async (args: any) => {
+        try {
+          //fazer chamada para api de imoveis
+        } catch (error) {}
+      },
       getJobs: async () => {
         await delay(1000);
         return await fetchJobs();
