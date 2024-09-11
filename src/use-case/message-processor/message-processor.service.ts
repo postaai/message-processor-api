@@ -280,7 +280,10 @@ export class MessageProcessorUseCase {
       getImoveis: async (args: any) => {
         try {
           //fazer chamada para api de imoveis
-        } catch (error) {}
+          return await this.imovelService.findAll();
+        } catch (error) {
+          return error;
+        }
       },
       getJobs: async () => {
         await delay(1000);
