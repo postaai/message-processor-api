@@ -227,7 +227,7 @@ export class MessageProcessorUseCase {
 
     if (submitStatus === "completed") {
       await this.clinet.beta.threads.messages.create(user.threadId, {
-        content: `Crie um resumo da conversa contendo as seguintes informaçĩoes em formato json, caso não encontre a informação atribua null, o telefone sempre será ${user.userId}, preencha o campo observacao com informacoes uteis da conversa.
+        content: `Crie um resumo da conversa contendo as seguintes informaçĩoes em formato json, caso não encontre a informação atribua null, o telefone sempre será ${user.userId}, preencha o campo observacao com informacoes uteis da conversa, Atenção retorne somente o JSON com os campos escritos a baixo, não gere nehum texto alem do json solicitado.
                   nome:
                   datadeNascimento:
                   trabalhaDeCarteiraAssinada:
@@ -239,7 +239,7 @@ export class MessageProcessorUseCase {
                   formaDePagamento:
                   valorImovel:
                   valorEntrada:
-                  Observacaoes:`,
+                  observacaoes:`,
         role: "user",
       });
 
