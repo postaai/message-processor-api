@@ -84,7 +84,7 @@ export class MessageProcessorUseCase {
     const resultRunStatus = await this.checkStatus(run, user);
 
     if (resultRunStatus === "resume") {
-      return "";
+      return null;
     }
 
     if (resultRunStatus === "curriculo") {
