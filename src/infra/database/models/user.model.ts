@@ -16,6 +16,8 @@ export class User {
   @Prop()
   assistantId: string;
   @Prop()
+  contactName?: string;
+  @Prop()
   cratedAt: Date;
   @Prop()
   updatedAt: Date;

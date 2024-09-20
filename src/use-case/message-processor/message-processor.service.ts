@@ -26,18 +26,18 @@ export class MessageProcessorUseCase {
     this.clinet = this.openAiClient.getClient();
   }
 
-  async process(userId: string, message: string) {
+  async process(userId: string, message: string, contactName?: string) {
     let user = await this.userService.findByUserId(userId);
     if (!user) {
       const assistantId = process.env.DEFAULT_ASSISTANT_ID;
-      user = await this.createUser(userId, assistantId);
+      user = await this.createUser(userId, assistantId, contactName);
       console.log("Novo usuario criado!");
     }
 
     return await this.processMessage(user, message);
   }
 
-  async createUser(userId: string, assistantId: string) {
+  async createUser(userId: string, assistantId: string, contactName?: string) {
     const newThread = await this.clinet.beta.threads.create({
       tool_resources: {
         file_search: { vector_store_ids: [process.env.FILE_SEARCH_ID] },
@@ -48,6 +48,7 @@ export class MessageProcessorUseCase {
       userId,
       threadId: newThread.id,
       assistantId: assistantId,
+      contactName,
       createdAt: new Date(),
     });
   }
@@ -226,38 +227,7 @@ export class MessageProcessorUseCase {
     const submitStatus = await this.checkStatus(runObject, user);
 
     if (submitStatus === "completed") {
-      await this.clinet.beta.threads.messages.create(user.threadId, {
-        content: `Crie um resumo da conversa contendo as seguintes informaçĩoes em formato json, caso não encontre a informação atribua null, o telefone sempre será ${user.userId}, preencha o campo observacao com informacoes uteis da conversa, Atenção retorne somente o JSON com os campos escritos a baixo, não gere nehum texto alem do json solicitado, não retorne em markdown, retorne somente o json em texto plano e sem quebras de linhas e formatações
-                  nome:
-                  datadeNascimento:
-                  trabalhaDeCarteiraAssinada:
-                  rendaBrutaMensal:
-                  anosDeCarteiraAssinada:
-                  quantosFilhos: 	
-                  telefone:
-                  linkImovel:
-                  formaDePagamento:
-                  valorImovel:
-                  valorEntrada:
-                  observacaoes:`,
-        role: "user",
-      });
-
-      const runRsponse = await this.clinet.beta.threads.runs.create(
-        user.threadId,
-        {
-          assistant_id: user.assistantId,
-        }
-      );
-
-      const status = await this.checkStatus(runRsponse, user);
-
-      if (status === "completed") {
-        const listMessage = await this.listMessages(user.threadId, 0);
-        console.log({ data: listMessage });
-        await postSendResume(listMessage);
-        return { message: "Obrigado!" };
-      }
+      await postSendResume(user);
     }
   }
 
