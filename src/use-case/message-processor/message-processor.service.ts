@@ -84,11 +84,11 @@ export class MessageProcessorUseCase {
     const resultRunStatus = await this.checkStatus(run, user);
 
     if (resultRunStatus === "resume") {
-      return "Obrigado pelo contato, um consultor irá entrar em contato em breve!";
+      return "";
     }
 
     if (resultRunStatus === "curriculo") {
-      return "Obrigado pelo contato, enviei suas informações para o recrutador, boa sorte!";
+      return "";
     }
 
     if (resultRunStatus === "rate_limit_exceeded") {
@@ -212,6 +212,8 @@ export class MessageProcessorUseCase {
     const runObject = run;
     const toolcalls = run.required_action?.submit_tool_outputs.tool_calls;
 
+    console.log("CAI NO FINSH -> 0");
+
     console.log("tool call id:", toolcalls[0].id);
     console.log("threadId", threadId);
     console.log("runId", runId);
@@ -227,6 +229,7 @@ export class MessageProcessorUseCase {
     const submitStatus = await this.checkStatus(runObject, user);
 
     if (submitStatus === "completed") {
+      console.log("CAI NO FINSH -> 1");
       await postSendResume(user);
     }
   }
