@@ -1,0 +1,73 @@
+{
+  "name": "getImoveis",
+  "description": "Realiza uma consulta à base de dados da imobiliária. essa busca retorna uma lista com os imóveis.",
+  "strict": false,
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "tipo": {
+        "type": "string",
+        "enum": [
+          "Casa",
+          "Apartamento",
+          "Terreno",
+          "Terreno"
+        ]
+      },
+      "categoria": {
+        "type": "string",
+        "enum": [
+          "Novo",
+          "Usado",
+          "Na planta"
+        ]
+      },
+      "area": {
+        "type": "number",
+        "description": "Area do terreno em m²"
+      },
+      "areaConstruida": {
+        "type": "number",
+        "description": "Area construida no terreno em m²"
+      },
+      "quartos": {
+        "type": "number",
+        "description": "quantidade de quartos no imóvel"
+      },
+      "banheiros": {
+        "type": "number",
+        "description": "quantidade de banheiros no imóvel"
+      },
+      "suites": {
+        "type": "number",
+        "description": "quantidade de suites no imóvel"
+      },
+      "vagas": {
+        "type": "number",
+        "description": "quantidade de vagas na garagem"
+      },
+      "andar": {
+        "type": "number",
+        "description": "andar do imóvel"
+      },
+      "docInclusa": {
+        "type": "boolean",
+        "description": "se o imóvel possui documentação inclusa"
+      },
+      "valor": {
+        "type": "number",
+        "description": "valor do imóvel"
+      },
+      "bairro": {
+        "type": "string",
+        "description": "bairro do imóvel"
+      },
+      "cidade": {
+        "type": "string",
+        "description": "cidade do imóvel"
+      }
+    },
+    "additionalProperties": false,
+    "required": []
+  }
+}

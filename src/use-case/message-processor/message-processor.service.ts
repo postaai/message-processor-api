@@ -12,6 +12,7 @@ import {
   postSendCurriculo,
 } from "src/infra/bigfoods/bigfoods.service";
 import { TextContentBlock } from "openai/resources/beta/threads/messages";
+import * as amplaapi from "src/infra/amplaapi/amplaapi.service";
 
 //const assistantID = process.env.ASSISTANT_ID;
 
@@ -253,7 +254,17 @@ export class MessageProcessorUseCase {
       getImoveis: async (args: any) => {
         try {
           //fazer chamada para api de imoveis
-          return await this.imovelService.findAll();
+          //return await this.imovelService.findAll();
+          const params = JSON.parse(args);
+          console.log(
+            "args: ------->------------->---------->---------->---------->",
+            params
+          );
+          if (params?.id) {
+            return (await amplaapi.getImoveis({ id: params.id })).data;
+          } else {
+            return (await amplaapi.getImoveis()).data;
+          }
         } catch (error) {
           return error;
         }

@@ -1,7 +1,6 @@
 import { Body, Controller, Get, Post, Res } from "@nestjs/common";
 import { ApiBody, ApiProperty, ApiTags } from "@nestjs/swagger";
 import { Response } from "express";
-import { postSendResume } from "src/infra/whtasapp/whatsapp.service";
 import { MessageProcessorUseCase } from "src/use-case/message-processor/message-processor.service";
 import zod from "zod";
 
