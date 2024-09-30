@@ -263,7 +263,17 @@ export class MessageProcessorUseCase {
           if (params?.id) {
             return (await amplaapi.getImoveis({ id: params.id })).data;
           } else {
-            return (await amplaapi.getImoveis()).data;
+            const imoveis = (await amplaapi.getImoveis()).data;
+
+            const mappedImoveis = imoveis.data.map((imovel: any) => ({
+              ...imovel,
+              link: `https://ampla-site.vercel.app/imovel/${imovel._id}`,
+            }));
+            console.log(
+              "imoveis: ------------------------------------> ",
+              mappedImoveis
+            );
+            return mappedImoveis;
           }
         } catch (error) {
           return error;
