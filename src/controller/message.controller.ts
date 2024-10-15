@@ -22,11 +22,9 @@ export class MessageController {
   async processMessage(@Body() body: RequestProcessBody, @Res() res: Response) {
     console.log("BODY ---->", body);
 
-    // ...
-
     const schema = zod.object({
       contactName: zod.string().optional().nullable(),
-      message: zod.string(),
+      messages: zod.array(zod.string()),
       userId: zod.string(),
     });
 
@@ -49,7 +47,7 @@ export class MessageController {
 
     const message = await this.messageUseCase.process(
       validationResult.data.userId,
-      validationResult.data.message,
+      validationResult.data.messages,
       validationResult.data.contactName
     );
     console.log("RESPONSE -->", message);

@@ -27,7 +27,7 @@ export class MessageProcessorUseCase {
     this.clinet = this.openAiClient.getClient();
   }
 
-  async process(userId: string, message: string, contactName?: string) {
+  async process(userId: string, messages: string[], contactName?: string) {
     let user = await this.userService.findByUserId(userId);
     if (!user) {
       const assistantId = process.env.DEFAULT_ASSISTANT_ID;
@@ -35,7 +35,7 @@ export class MessageProcessorUseCase {
       console.log("Novo usuario criado!");
     }
 
-    return await this.processMessage(user, message);
+    return await this.processMessage(user, messages);
   }
 
   async createUser(userId: string, assistantId: string, contactName?: string) {
@@ -54,11 +54,11 @@ export class MessageProcessorUseCase {
     });
   }
 
-  private async processMessage(user: User, message: string) {
+  private async processMessage(user: User, messages: string[]) {
     try {
       console.log("Mensagem enviada para OpenAI");
       await this.clinet.beta.threads.messages.create(user.threadId, {
-        content: message,
+        content: messages.map((msg) => ({ type: "text", text: msg })),
         role: "user",
         metadata: {},
       });
