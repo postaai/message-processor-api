@@ -71,6 +71,7 @@ export class MessageProcessorUseCase {
       console.log("Thread ID: ", user.threadId);
     } catch (err: any) {
       const errorMessage = err?.message as string;
+      console.error("Erro ao enviar mensagem para OpenAI: ", errorMessage);
       if (
         errorMessage.includes("Can't add messages to thread") &&
         errorMessage.includes("already has an active run")
