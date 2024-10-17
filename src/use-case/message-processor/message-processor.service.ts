@@ -21,14 +21,19 @@ export class MessageProcessorUseCase {
   private clinet: OpenAI;
   constructor(
     private openAiClient: OpenAiClient,
-    private userService: UserService,
-    private imovelService: ImoveisService
+    private userService: UserService
   ) {
     this.clinet = this.openAiClient.getClient();
   }
 
   async process(userId: string, messages: string[], contactName?: string) {
     let user = await this.userService.findByUserId(userId);
+
+    if (user?.finished) {
+      console.log("Usuário já finalizou a conversa");
+      return;
+    }
+
     if (!user) {
       const assistantId = process.env.DEFAULT_ASSISTANT_ID;
       user = await this.createUser(userId, assistantId, contactName);
@@ -128,7 +133,6 @@ export class MessageProcessorUseCase {
         toolCalls.find((data) => data.function.name === "finishConversation")
       ) {
         await this.finishConversation(retrieveRun, user);
-        await this.userService.deleteUserById(user.userId);
         await this.clearSession(user.userId);
         return "resume";
       } else if (
@@ -316,9 +320,7 @@ export class MessageProcessorUseCase {
     const user = await this.userService.findByUserId(userId);
     if (!user) return false;
 
-    this.clinet.beta.threads.del(user.threadId);
-
-    return await this.userService.deleteUserById(userId);
+    return await this.userService.updateUserById(userId, { finished: true });
   }
 
   async getSession(userId: string) {

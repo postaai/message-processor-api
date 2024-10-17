@@ -20,6 +20,8 @@ export class User {
   @Prop()
   cratedAt: Date;
   @Prop()
+  finished: boolean;
+  @Prop()
   updatedAt: Date;
 }
 

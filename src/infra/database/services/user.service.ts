@@ -10,6 +10,7 @@ export interface UserDataType {
   threadId: string;
   contactName?: string;
   assistantId?: string;
+  finished?: boolean;
   createdAt?: Date;
 }
 
@@ -28,5 +29,9 @@ export class UserService {
 
   async deleteUserById(userId: string) {
     return await this.userModel.deleteOne({ userId }).exec();
+  }
+
+  async updateUserById(userId: string, userData: Partial<UserDataType>) {
+    return await this.userModel.updateOne({ userId }, userData).exec();
   }
 }
