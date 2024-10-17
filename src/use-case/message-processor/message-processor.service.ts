@@ -31,7 +31,7 @@ export class MessageProcessorUseCase {
 
     if (user?.finished) {
       console.log("Usuário já finalizou a conversa");
-      return;
+      return { message: "", finished: true };
     }
 
     if (!user) {
@@ -40,7 +40,9 @@ export class MessageProcessorUseCase {
       console.log("Novo usuario criado!");
     }
 
-    return await this.processMessage(user, messages);
+    const result = await this.processMessage(user, messages);
+
+    return { message: result };
   }
 
   async createUser(userId: string, assistantId: string, contactName?: string) {

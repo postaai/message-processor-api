@@ -45,12 +45,12 @@ export class MessageController {
       });
     }
 
-    const message = await this.messageUseCase.process(
+    const { message, finished } = await this.messageUseCase.process(
       validationResult.data.userId,
       validationResult.data.messages,
       validationResult.data.contactName
     );
     console.log("RESPONSE -->", message);
-    return res.send({ message });
+    return res.send({ message, finished });
   }
 }
