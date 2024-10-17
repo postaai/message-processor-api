@@ -1,5 +1,5 @@
-import { Body, Controller, Get, Post, Res } from "@nestjs/common";
-import { ApiBody, ApiProperty, ApiTags } from "@nestjs/swagger";
+import { Body, Controller, Get, Param, Post, Res } from "@nestjs/common";
+import { ApiBody, ApiParam, ApiProperty, ApiTags } from "@nestjs/swagger";
 import { Response } from "express";
 import { MessageProcessorUseCase } from "src/use-case/message-processor/message-processor.service";
 import zod from "zod";
@@ -52,5 +52,23 @@ export class MessageController {
     );
     console.log("RESPONSE -->", message);
     return res.send({ message, finished });
+  }
+
+  @ApiParam({
+    name: "id",
+    required: true,
+    description: "The ID of the message",
+  })
+  @Get("/is-finished/:userId")
+  async isFinished(@Param("userId") userId: string) {
+    const user = await this.messageUseCase.getSession(userId);
+
+    console.log(user,userId)
+
+    if (!user) {
+      return { isFinished: false };
+    }
+
+    return { isFinished: user?.finished };
   }
 }
