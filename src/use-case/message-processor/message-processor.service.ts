@@ -29,10 +29,10 @@ export class MessageProcessorUseCase {
   async process(userId: string, messages: string[], contactName?: string) {
     let user = await this.userService.findByUserId(userId);
 
-    if (user?.finished) {
-      console.log("Usuário já finalizou a conversa");
-      return { message: "", finished: true };
-    }
+    // if (user?.finished) {
+    //   console.log("Usuário já finalizou a conversa");
+    //   return { message: "", finished: true };
+    // }
 
     if (!user) {
       const assistantId = process.env.DEFAULT_ASSISTANT_ID;
@@ -42,7 +42,7 @@ export class MessageProcessorUseCase {
 
     const result = await this.processMessage(user, messages);
 
-    return { message: result };
+    return { message: result, finished: user?.finished };
   }
 
   async createUser(userId: string, assistantId: string, contactName?: string) {
