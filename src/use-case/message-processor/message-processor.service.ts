@@ -268,7 +268,9 @@ export class MessageProcessorUseCase {
             params
           );
           if (params?.id) {
-            return (await amplaapi.getImoveis({ id: params.id })).data;
+            const { data } = await amplaapi.getImoveis({ id: params.id });
+            const link = `https://ampla-site.vercel.app/imovel/${data._id}`;
+            return { ...data, link };
           } else {
             const imoveis = (await amplaapi.getImoveis()).data;
 
